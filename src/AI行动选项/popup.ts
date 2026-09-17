@@ -1552,6 +1552,9 @@ function renderPopupRoot(
         <button type="button" class="tlao-nav-btn tlao-update-desktop-entry" data-panel="updates" aria-label="更新">
           <span class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></span><span class="tlao-nav-label">更新</span><span class="tlao-update-dot ${getUpdateState().hasUpdate ? 'is-visible' : ''}" aria-hidden="true"></span>
         </button>
+        <button type="button" class="tlao-nav-btn tlao-preview-feature-entry" disabled aria-disabled="true" title="功能预览，暂不可用">
+          <span class="fa-solid fa-timeline" aria-hidden="true"></span><span class="tlao-nav-label">剧情时间线</span><span class="tlao-preview-feature-badge">预览</span>
+        </button>
       </nav>
       <div class="tlao-panels">
         <section class="tlao-panel" data-panel-content="overview" aria-label="概览">

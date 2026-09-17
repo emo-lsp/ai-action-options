@@ -1,7 +1,19 @@
 {
   "schemaVersion": 1,
-  "latest": "1.6.2-testing.2",
+  "latest": "1.6.2-testing.3",
   "versions": [
+    {
+      "version": "1.6.2-testing.3",
+      "releasedAt": "2026-09-17",
+      "channel": "beta",
+      "changes": [
+        "增加禁用态“剧情时间线”预览入口",
+        "入口只能查看，不能点击或进入，仅用于确认测试版本切换"
+      ],
+      "ref": "v1.6.2-testing.3",
+      "path": "index.js",
+      "sha256": "9d12c906599adce6cb550dabb9e08aa49f423650927e91fd4c020e629b12ee59"
+    },
     {
       "version": "1.6.2-testing.2",
       "releasedAt": "2026-09-17",

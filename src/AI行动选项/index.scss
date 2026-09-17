@@ -624,6 +624,20 @@ dialog.tlao-knowledge-dialog #dialogue_popup_controls .popup-button-ok:hover {
   color: var(--tlao-accent);
 }
 
+.tlao-preview-feature-entry:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.tlao-preview-feature-badge {
+  margin-left: auto;
+  padding: 1px 4px;
+  border: 1px solid var(--tlao-hairline);
+  color: var(--tlao-ink-subtle);
+  font-size: 9px;
+  line-height: 1.2;
+}
+
 .tlao-update-dot {
   display: inline-block;
   flex: 0 0 auto;
