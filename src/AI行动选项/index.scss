@@ -624,20 +624,6 @@ dialog.tlao-knowledge-dialog #dialogue_popup_controls .popup-button-ok:hover {
   color: var(--tlao-accent);
 }
 
-.tlao-preview-feature-entry:disabled {
-  cursor: not-allowed;
-  opacity: 0.58;
-}
-
-.tlao-preview-feature-badge {
-  margin-left: auto;
-  padding: 1px 4px;
-  border: 1px solid var(--tlao-hairline);
-  color: var(--tlao-ink-subtle);
-  font-size: 9px;
-  line-height: 1.2;
-}
-
 .tlao-update-dot {
   display: inline-block;
   flex: 0 0 auto;
@@ -773,11 +759,14 @@ dialog.tlao-knowledge-dialog #dialogue_popup_controls .popup-button-ok:hover {
 }
 
 .tlao-update-status.is-available {
-  border-color: color-mix(in srgb, #d44 52%, var(--tlao-hairline));
-  background: color-mix(in srgb, #d44 8%, var(--tlao-surface-2));
+  border-color: color-mix(in srgb, var(--tlao-accent) 58%, var(--tlao-hairline));
+  background: var(--tlao-accent-soft);
 }
 
-.tlao-update-status.is-available .tlao-update-status-icon,
+.tlao-update-status.is-available .tlao-update-status-icon {
+  color: var(--tlao-accent);
+}
+
 .tlao-update-status.is-error .tlao-update-status-icon {
   color: #c93b32;
 }
@@ -1846,6 +1835,150 @@ dialog.tlao-knowledge-dialog #dialogue_popup_controls .popup-button-ok:hover {
 }
 
 // -----------------------------------------------------------------------------
+// 更新确认弹窗
+// -----------------------------------------------------------------------------
+
+dialog.tlao-update-confirm-dialog,
+.popup.tlao-update-confirm-dialog,
+#dialogue_popup.tlao-update-confirm-dialog {
+  width: min(92vw, 540px) !important;
+  max-width: min(92vw, 540px) !important;
+}
+
+.tlao-update-confirm-popup {
+  gap: 0;
+  width: 100%;
+  max-height: none;
+  padding: 0;
+}
+
+.tlao-update-confirm-hero {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 18px 54px 16px 18px;
+  border-bottom: 1px solid var(--tlao-hairline);
+  background: var(--tlao-surface-2);
+}
+
+.tlao-update-confirm-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--tlao-hairline-strong);
+  background: var(--tlao-accent-soft);
+  color: var(--tlao-accent);
+  font-size: 18px;
+}
+
+.tlao-update-confirm-eyebrow {
+  margin-bottom: 3px;
+  color: var(--tlao-ink-subtle);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.tlao-update-confirm-hero h3 {
+  margin: 0;
+  color: var(--tlao-ink);
+  font-size: 17px;
+  font-weight: 750;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.tlao-update-confirm-body {
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px;
+}
+
+.tlao-update-confirm-body > p {
+  margin: 0;
+  color: var(--tlao-ink-muted);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.tlao-update-confirm-route {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 11px 12px;
+  border: 1px solid var(--tlao-hairline);
+  background: var(--tlao-surface-1);
+}
+
+.tlao-update-confirm-route > span:not(.fa-solid) {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tlao-update-confirm-route > span:last-child {
+  text-align: right;
+}
+
+.tlao-update-confirm-route small {
+  color: var(--tlao-ink-subtle);
+  font-size: 10px;
+}
+
+.tlao-update-confirm-route strong {
+  overflow: hidden;
+  color: var(--tlao-ink);
+  font-family: var(--tlao-mono);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tlao-update-confirm-route > .fa-solid {
+  color: var(--tlao-accent);
+  font-size: 12px;
+}
+
+.tlao-update-confirm-assurances {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.tlao-update-confirm-assurances > span {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 8px;
+  border: 1px solid var(--tlao-hairline);
+  background: var(--tlao-surface-2);
+  color: var(--tlao-ink-muted);
+  font-size: 11px;
+}
+
+.tlao-update-confirm-assurances .fa-solid {
+  color: var(--tlao-success);
+}
+
+.tlao-update-confirm-actions {
+  display: flex;
+  gap: 9px;
+  justify-content: flex-end;
+  padding: 13px 18px 18px;
+  border-top: 1px solid var(--tlao-hairline);
+}
+
+.tlao-update-confirm-actions .menu_button {
+  min-width: 104px;
+  min-height: 44px;
+}
+
+// -----------------------------------------------------------------------------
 // 世界书条目选择弹窗
 // -----------------------------------------------------------------------------
 
@@ -2405,6 +2538,33 @@ dialog.tlao-knowledge-dialog #dialogue_popup_controls .popup-button-ok:hover {
   .tlao-preview-popup,
   .tlao-knowledge-popup {
     padding: 14px;
+  }
+
+  .tlao-update-confirm-popup {
+    padding: 0;
+  }
+
+  .tlao-update-confirm-hero {
+    grid-template-columns: 40px minmax(0, 1fr);
+    padding: 15px 48px 14px 14px;
+  }
+
+  .tlao-update-confirm-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .tlao-update-confirm-body {
+    padding: 14px;
+  }
+
+  .tlao-update-confirm-actions {
+    padding: 12px 14px 14px;
+  }
+
+  .tlao-update-confirm-actions .menu_button {
+    flex: 1 1 0;
+    min-width: 0;
   }
 
   .tlao-editor-popup-actions {

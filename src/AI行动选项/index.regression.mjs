@@ -40,6 +40,24 @@ assert.match(
   '脚本加载后应按用户设置自动检查更新',
 );
 assert.match(updateSource, /crypto\.subtle\.digest\('SHA-256'/u, '安装更新前应校验脚本 SHA-256');
+assert.doesNotMatch(popupSource, /window\.confirm\(/u, '更新确认不得使用脱离主题的浏览器原生弹窗');
+assert.match(popupSource, /openUpdateInstallConfirmation/u, '更新安装前应显示脚本主题内的确认界面');
+assert.match(
+  stylesheet,
+  /\.tlao-update-status\.is-available\s*\{[\s\S]{0,220}?var\(--tlao-accent-soft\)/u,
+  '可用更新状态应使用强调色而非错误红色',
+);
+assert.match(
+  stylesheet,
+  /\.tlao-update-confirm-actions \.menu_button\s*\{[\s\S]{0,100}?min-height:\s*44px/u,
+  '更新确认弹窗的操作按钮应满足触控尺寸',
+);
+assert.match(
+  updateSource,
+  /window\.top[\s\S]{0,360}?hostWindow\.setTimeout\([\s\S]{0,100}?hostWindow\.location\.reload/u,
+  '安装成功后应延迟刷新 SillyTavern 顶层页面，而不是只刷新脚本 iframe',
+);
+assert.match(indexSource, /onUpdateInstalled:[\s\S]{0,180}?更新成功/u, '安装成功后应先显示顶部更新提示');
 assert.match(
   popupSource,
   /export async function openSettingsPopup[\s\S]{0,260}?POPUP_TYPE\?\.DISPLAY \?\? popupApi\.POPUP_TYPE\?\.TEXT/u,

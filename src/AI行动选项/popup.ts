@@ -31,6 +31,7 @@ import {
   compareVersions,
   getUpdateState,
   installUpdate,
+  scheduleSillyTavernPageReload,
   subscribeUpdateState,
   type UpdateRuntimeState,
 } from './update';
@@ -394,6 +395,9 @@ type PopupFeedbackState = {
   level: PopupFeedbackLevel;
   message: string;
 } | null;
+type SettingsPopupCallbacks = {
+  onUpdateInstalled?: (version: string) => void;
+};
 
 function escapeHtml(value: unknown): string {
   return String(value ?? '')
@@ -558,6 +562,101 @@ async function openReadonlyPreviewPopup(
         animateEntrance(motionMedia, $content.find('.tlao-preview-surface'), { y: 8, duration: 0.28, delay: 0.08 });
       },
     });
+  } finally {
+    interactions.destroy();
+    motionMedia.revert();
+  }
+}
+
+async function openUpdateInstallConfirmation(
+  popupApi: PopupApi,
+  action: string,
+  targetVersion: string,
+): Promise<boolean> {
+  const popupType = popupApi.POPUP_TYPE?.DISPLAY;
+  if (typeof popupApi.callGenericPopup !== 'function' || typeof popupType !== 'number') {
+    console.error('[AI行动选项] 当前酒馆环境不支持更新确认弹窗');
+    return false;
+  }
+
+  const confirmLabel = action === '回退' ? '确认回退' : action === '重新安装' ? '确认重装' : '确认更新';
+  const $content = $(`
+    <div class="tlao-preview-popup tlao-update-confirm-popup ${POPUP_THEME_CLASS}" role="document" aria-labelledby="tlao-update-confirm-title">
+      <div class="tlao-update-confirm-hero">
+        <span class="tlao-update-confirm-icon fa-solid fa-cloud-arrow-down" aria-hidden="true"></span>
+        <div>
+          <div class="tlao-update-confirm-eyebrow">版本切换</div>
+          <h3 id="tlao-update-confirm-title">${escapeHtml(action)}到 v${escapeHtml(targetVersion)}</h3>
+        </div>
+      </div>
+      <div class="tlao-update-confirm-body">
+        <div class="tlao-update-confirm-route" aria-label="版本变化">
+          <span><small>当前版本</small><strong>v${escapeHtml(SCRIPT_VERSION)}</strong></span>
+          <span class="fa-solid fa-arrow-right" aria-hidden="true"></span>
+          <span><small>目标版本</small><strong>v${escapeHtml(targetVersion)}</strong></span>
+        </div>
+        <p>脚本校验通过后将替换当前版本，随后自动刷新 SillyTavern。</p>
+        <div class="tlao-update-confirm-assurances" aria-label="安装保障">
+          <span><span class="fa-solid fa-shield-halved" aria-hidden="true"></span> SHA-256 校验</span>
+          <span><span class="fa-solid fa-floppy-disk" aria-hidden="true"></span> 保留现有设置</span>
+        </div>
+      </div>
+      <div class="tlao-update-confirm-actions">
+        <button type="button" class="menu_button tlao-update-confirm-cancel">取消</button>
+        <button type="button" class="menu_button menu_button_primary tlao-update-confirm-submit">${confirmLabel}</button>
+      </div>
+    </div>
+  `);
+  const motionMedia = gsap.matchMedia();
+  const interactions = mountPopupMicroInteractions($content);
+  let confirmed = false;
+
+  try {
+    await popupApi.callGenericPopup($content, popupType, '', {
+      okButton: false,
+      cancelButton: false,
+      wider: false,
+      large: false,
+      leftAlign: true,
+      allowVerticalScrolling: false,
+      animation: 'none',
+      onOpen: async popup => {
+        const $dialog = $(popup.dlg);
+        $dialog.addClass('tlao-preview-dialog tlao-update-confirm-dialog');
+        $dialog.find('.popup-controls, #dialogue_popup_controls').attr('hidden', 'hidden');
+        applyPopupChrome($dialog, popup, $content);
+        applyPopupTheme($dialog);
+
+        $content.find('.tlao-update-confirm-cancel').on('click', () => {
+          void popup.completeCancelled();
+        });
+        $content.find('.tlao-update-confirm-submit').on('click', () => {
+          confirmed = true;
+          void popup.completeAffirmative();
+        });
+
+        animateEntrance(motionMedia, $content.find('.tlao-update-confirm-hero'), {
+          y: -5,
+          duration: 0.22,
+        });
+        animateEntrance(motionMedia, $content.find('.tlao-update-confirm-body'), {
+          y: 8,
+          duration: 0.28,
+          delay: 0.04,
+        });
+        animateEntrance(motionMedia, $content.find('.tlao-update-confirm-actions'), {
+          y: 6,
+          duration: 0.24,
+          delay: 0.08,
+        });
+
+        window.requestAnimationFrame(() => {
+          const cancelButton = $content.find('.tlao-update-confirm-cancel').get(0);
+          if (isHtmlElementOfTag(cancelButton, 'button')) cancelButton.focus();
+        });
+      },
+    });
+    return confirmed;
   } finally {
     interactions.destroy();
     motionMedia.revert();
@@ -1552,9 +1651,6 @@ function renderPopupRoot(
         <button type="button" class="tlao-nav-btn tlao-update-desktop-entry" data-panel="updates" aria-label="更新">
           <span class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></span><span class="tlao-nav-label">更新</span><span class="tlao-update-dot ${getUpdateState().hasUpdate ? 'is-visible' : ''}" aria-hidden="true"></span>
         </button>
-        <button type="button" class="tlao-nav-btn tlao-preview-feature-entry" disabled aria-disabled="true" title="功能预览，暂不可用">
-          <span class="fa-solid fa-timeline" aria-hidden="true"></span><span class="tlao-nav-label">剧情时间线</span><span class="tlao-preview-feature-badge">预览</span>
-        </button>
       </nav>
       <div class="tlao-panels">
         <section class="tlao-panel" data-panel-content="overview" aria-label="概览">
@@ -1830,7 +1926,10 @@ function syncDraftFromInputs($root: JQuery<HTMLElement>, draft: ScriptSettings):
   draft.promptMessages = getDefaultPromptMessages();
 }
 
-export async function openSettingsPopup(initialSettings: ScriptSettings): Promise<ScriptSettings | null> {
+export async function openSettingsPopup(
+  initialSettings: ScriptSettings,
+  callbacks: SettingsPopupCallbacks = {},
+): Promise<ScriptSettings | null> {
   const popupApi = getPopupApi();
   const popupType = popupApi.POPUP_TYPE?.DISPLAY ?? popupApi.POPUP_TYPE?.TEXT;
   if (typeof popupApi.callGenericPopup !== 'function' || typeof popupType !== 'number') {
@@ -2206,12 +2305,19 @@ export async function openSettingsPopup(initialSettings: ScriptSettings): Promis
 
       const comparison = compareVersions(release.version, SCRIPT_VERSION);
       const action = comparison < 0 ? '回退' : comparison === 0 ? '重新安装' : '更新';
-      if (!window.confirm(`确定要${action}到 v${release.version} 吗？\n\n脚本将在校验通过后替换并重新加载。`)) return;
+      if (!(await openUpdateInstallConfirmation(popupApi, action, release.version))) return;
 
       const $button = $(event.currentTarget).prop('disabled', true).text('正在安装…');
       try {
         await persistSettingsNow();
         await installUpdate(release, draft.updates.endpoint);
+        setPopupFeedback('success', `已安装 v${release.version}，正在刷新页面…`);
+        try {
+          callbacks.onUpdateInstalled?.(release.version);
+        } catch (error) {
+          console.warn('[AI行动选项] 显示更新成功通知失败:', error);
+        }
+        scheduleSillyTavernPageReload();
       } catch (error) {
         console.error('[AI行动选项] 安装更新失败:', error);
         setPopupFeedback('error', `安装失败：${(error as Error)?.message || '未知错误'}`);

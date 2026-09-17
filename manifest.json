@@ -1,7 +1,21 @@
 {
   "schemaVersion": 1,
-  "latest": "1.6.2-testing.3",
+  "latest": "1.6.2-testing.4",
   "versions": [
+    {
+      "version": "1.6.2-testing.4",
+      "releasedAt": "2026-09-17",
+      "channel": "beta",
+      "changes": [
+        "更新确认改为卡库像素风 UI，不再使用浏览器原生弹窗",
+        "“发现新版本”改为蓝色信息态",
+        "安装成功后显示顶部提示并自动刷新 SillyTavern 顶层页面",
+        "修复更新后新脚本未立即生效"
+      ],
+      "ref": "v1.6.2-testing.4",
+      "path": "index.js",
+      "sha256": "208ed353204097b980dc3e73b1702813384f74be6a15f36603fab3bdac9aecf5"
+    },
     {
       "version": "1.6.2-testing.3",
       "releasedAt": "2026-09-17",

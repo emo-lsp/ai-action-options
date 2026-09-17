@@ -110,7 +110,7 @@ test('自动端点按 testingcf、jsDelivr、GitHub 回退，24 小时内使用�
   assert.equal(requests.length, 2, '缓存期内不应重复请求');
 });
 
-test('安装前校验 SHA-256，通过后只替换当前脚本内容', async () => {
+test('安装前校验 SHA-256，通过后只替换当前脚本内容，不重载脚本 iframe', async () => {
   const content = `/* release */\n${'x'.repeat(12_000)}`;
   const sha256 = createHash('sha256').update(content).digest('hex');
   let trees = [
@@ -140,7 +140,45 @@ test('安装前校验 SHA-256，通过后只替换当前脚本内容', async () 
   await update.installUpdate({ ...manifest().versions[0], sha256 }, 'github');
   assert.equal(trees[0].content, 'other');
   assert.equal(trees[1].content, content);
-  assert.equal(reloads, 1);
+  assert.equal(reloads, 0);
+});
+
+test('安装成功提示后由宿主窗口定时刷新 SillyTavern 顶层页面', () => {
+  let iframeReloads = 0;
+  let hostReloads = 0;
+  let scheduledDelay = 0;
+  let scheduledCallback = null;
+  const hostWindow = {
+    location: {
+      reload: () => {
+        hostReloads += 1;
+      },
+    },
+    setTimeout: (callback, delay) => {
+      scheduledCallback = callback;
+      scheduledDelay = delay;
+      return 1;
+    },
+  };
+  const update = loadUpdate({
+    window: {
+      top: hostWindow,
+      setTimeout,
+      clearTimeout,
+      location: {
+        reload: () => {
+          iframeReloads += 1;
+        },
+      },
+    },
+  });
+
+  update.scheduleSillyTavernPageReload(1_234);
+  assert.equal(scheduledDelay, 1_234);
+  assert.equal(typeof scheduledCallback, 'function');
+  assert.equal(iframeReloads, 0);
+  scheduledCallback();
+  assert.equal(hostReloads, 1);
 });
 
 test('SHA-256 不一致时不替换脚本', async () => {
@@ -150,10 +188,20 @@ test('SHA-256 不一致时不替换脚本', async () => {
   const update = loadUpdate({
     getScriptTrees: () => [{ type: 'script', id: 'current-script', name: 'AI行动选项', content: currentContent }],
     updateScriptTreesWith: updater => {
-      currentContent = updater([{ type: 'script', id: 'current-script', name: 'AI行动选项', content: currentContent }])[0].content;
+      currentContent = updater([
+        { type: 'script', id: 'current-script', name: 'AI行动选项', content: currentContent },
+      ])[0].content;
     },
     fetch: async () => ({ ok: true, status: 200, text: async () => content }),
-    window: { setTimeout, clearTimeout, location: { reload: () => { reloads += 1; } } },
+    window: {
+      setTimeout,
+      clearTimeout,
+      location: {
+        reload: () => {
+          reloads += 1;
+        },
+      },
+    },
   });
 
   await assert.rejects(update.installUpdate(manifest().versions[0], 'github'), /SHA-256 校验失败/);

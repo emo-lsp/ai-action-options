@@ -354,5 +354,17 @@ export async function installUpdate(release: UpdateRelease, endpoint: UpdateEndp
 
   if (!content) throw new Error(`更新文件下载失败（${errors.join('；')}）`);
   installScriptContent(content);
-  window.location.reload();
+}
+
+/** 延迟刷新 SillyTavern 顶层页面，避免只重载脚本 iframe。 */
+export function scheduleSillyTavernPageReload(delayMs = 1_500): void {
+  let hostWindow = window;
+  try {
+    if (window.top && window.top !== window) hostWindow = window.top;
+  } catch {
+    // 极少数跨域嵌入环境无法访问 top，退回当前窗口。
+  }
+
+  const safeDelay = Number.isFinite(delayMs) ? Math.max(0, delayMs) : 1_500;
+  hostWindow.setTimeout(() => hostWindow.location.reload(), safeDelay);
 }

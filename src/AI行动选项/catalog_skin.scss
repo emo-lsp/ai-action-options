@@ -520,6 +520,20 @@
     border-bottom: 3px double var(--tlao-hairline);
   }
 
+  .tlao-update-confirm-hero {
+    border-bottom: 3px double var(--tlao-hairline);
+    background: linear-gradient(180deg, #f8f2e6, #e9e0cf);
+  }
+  .tlao-update-confirm-icon,
+  .tlao-update-confirm-route,
+  .tlao-update-confirm-assurances > span {
+    border-width: 2px;
+  }
+  .tlao-update-confirm-icon,
+  .tlao-update-confirm-route {
+    box-shadow: var(--tlao-pixel-raised);
+  }
+
   // 覆盖旧主题的 outline:none，方角焦点框不改变控件尺寸。
   :is(button, input, select, textarea):focus-visible {
     outline: 2px solid var(--tlao-accent) !important;
