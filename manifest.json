@@ -1,57 +1,23 @@
 {
   "schemaVersion": 1,
-  "latest": "1.6.2-testing.4",
+  "latest": "1.6.3",
   "versions": [
     {
-      "version": "1.6.2-testing.4",
+      "version": "1.6.3",
       "releasedAt": "2026-09-17",
-      "channel": "beta",
+      "channel": "stable",
       "changes": [
-        "更新确认改为卡库像素风 UI，不再使用浏览器原生弹窗",
-        "“发现新版本”改为蓝色信息态",
-        "安装成功后显示顶部提示并自动刷新 SillyTavern 顶层页面",
-        "修复更新后新脚本未立即生效"
+        "新增更新中心、自动检查、红点提醒、端点选择和 SHA-256 校验安装",
+        "自动比较各端点清单，修复 CDN 旧缓存导致版本列表缺失",
+        "更新确认使用卡库像素风 UI，新版本提示使用蓝色信息态",
+        "由宿主页面执行安装收尾，全局脚本保存后显示顶部通知并刷新整页",
+        "新增历史剧情摘要读取、自定义标签和逐楼层预览",
+        "改进上下文拼接、内部块过滤、生成进度与移动端布局",
+        "合并开发阶段更新，仅提供 1.6.3 正式版"
       ],
-      "ref": "v1.6.2-testing.4",
+      "ref": "v1.6.3",
       "path": "index.js",
-      "sha256": "208ed353204097b980dc3e73b1702813384f74be6a15f36603fab3bdac9aecf5"
-    },
-    {
-      "version": "1.6.2-testing.3",
-      "releasedAt": "2026-09-17",
-      "channel": "beta",
-      "changes": [
-        "增加禁用态“剧情时间线”预览入口",
-        "入口只能查看，不能点击或进入，仅用于确认测试版本切换"
-      ],
-      "ref": "v1.6.2-testing.3",
-      "path": "index.js",
-      "sha256": "9d12c906599adce6cb550dabb9e08aa49f423650927e91fd4c020e629b12ee59"
-    },
-    {
-      "version": "1.6.2-testing.2",
-      "releasedAt": "2026-09-17",
-      "channel": "beta",
-      "changes": [
-        "仅增加测试版本号，用于验证纯版本更新与回退"
-      ],
-      "ref": "v1.6.2-testing.2",
-      "path": "index.js",
-      "sha256": "3816ad0c4db270d8c15da1284c62b3e21b749a9a3550a66106bff1aab19ea620"
-    },
-    {
-      "version": "1.6.2-testing.1",
-      "releasedAt": "2026-09-17",
-      "channel": "beta",
-      "changes": [
-        "新增更新中心、自动检查、红点提醒、版本说明、安装与回退",
-        "新增历史剧情摘要读取与逐楼层预览",
-        "修正上下文拼接、缓存稳定性及内部块过滤",
-        "改进生成进度和移动端布局"
-      ],
-      "ref": "v1.6.2-testing.1",
-      "path": "index.js",
-      "sha256": "916dbf7a5f05e72b5ab8608ef6ddaef63616aaa0bb2cbf727c9d8cf3c2c02d03"
+      "sha256": "227d73d9ef9cf9286ea4d94d27ace45155adc8e347b4c29193e6711d08c127d6"
     }
   ]
 }

@@ -12,6 +12,7 @@ const settingsSource = readFileSync(new URL('./settings.ts', import.meta.url), '
 const pricingSource = readFileSync(new URL('./pricing.ts', import.meta.url), 'utf8');
 const usageCaptureSource = readFileSync(new URL('./usage_capture.ts', import.meta.url), 'utf8');
 const updateSource = readFileSync(new URL('./update.ts', import.meta.url), 'utf8');
+const hostUpdateSource = readFileSync(new URL('./update_host.ts', import.meta.url), 'utf8');
 const versionSource = readFileSync(new URL('./version.ts', import.meta.url), 'utf8');
 const { validateOptionsJson } = await import('./options.ts');
 const runningSelector = String.raw`\.tlao-progress-root\.is-visible:not\(\.is-success\):not\(\.is-warning\):not\(\.is-error\)::before`;
@@ -27,7 +28,7 @@ const noticePrioritySource =
   indexSource.match(/function isProgressVisible\([\s\S]*?function updateProgress/u)?.[0] ?? '';
 const catalogMobileStyles =
   catalogSkin.match(/@media \(max-width: 560px\) \{([\s\S]*?)\n\}\n\n@media \(prefers-reduced-motion/u)?.[1] ?? '';
-assert.match(versionSource, /SCRIPT_VERSION = '1\.6\.2'/u, '当前版本号应保持为 1.6.2');
+assert.match(versionSource, /SCRIPT_VERSION = '1\.6\.3'/u, '当前正式版本号应为 1.6.3');
 assert.match(
   popupSource,
   /tlao-update-desktop-entry[\s\S]{0,220}?tlao-update-dot/u,
@@ -53,11 +54,11 @@ assert.match(
   '更新确认弹窗的操作按钮应满足触控尺寸',
 );
 assert.match(
-  updateSource,
-  /window\.top[\s\S]{0,360}?hostWindow\.setTimeout\([\s\S]{0,100}?hostWindow\.location\.reload/u,
-  '安装成功后应延迟刷新 SillyTavern 顶层页面，而不是只刷新脚本 iframe',
+  hostUpdateSource,
+  /host\.Function\('payload'/u,
+  '安装、通知和刷新必须在宿主 realm 内创建，不能继续依赖被替换的 iframe',
 );
-assert.match(indexSource, /onUpdateInstalled:[\s\S]{0,180}?更新成功/u, '安装成功后应先显示顶部更新提示');
+assert.match(hostUpdateSource, /show\('更新成功'[\s\S]*?host\.location\.reload/u, '宿主应先显示成功通知再刷新');
 assert.match(
   popupSource,
   /export async function openSettingsPopup[\s\S]{0,260}?POPUP_TYPE\?\.DISPLAY \?\? popupApi\.POPUP_TYPE\?\.TEXT/u,

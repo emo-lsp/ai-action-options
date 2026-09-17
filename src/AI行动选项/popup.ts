@@ -31,7 +31,6 @@ import {
   compareVersions,
   getUpdateState,
   installUpdate,
-  scheduleSillyTavernPageReload,
   subscribeUpdateState,
   type UpdateRuntimeState,
 } from './update';
@@ -395,9 +394,6 @@ type PopupFeedbackState = {
   level: PopupFeedbackLevel;
   message: string;
 } | null;
-type SettingsPopupCallbacks = {
-  onUpdateInstalled?: (version: string) => void;
-};
 
 function escapeHtml(value: unknown): string {
   return String(value ?? '')
@@ -1926,10 +1922,7 @@ function syncDraftFromInputs($root: JQuery<HTMLElement>, draft: ScriptSettings):
   draft.promptMessages = getDefaultPromptMessages();
 }
 
-export async function openSettingsPopup(
-  initialSettings: ScriptSettings,
-  callbacks: SettingsPopupCallbacks = {},
-): Promise<ScriptSettings | null> {
+export async function openSettingsPopup(initialSettings: ScriptSettings): Promise<ScriptSettings | null> {
   const popupApi = getPopupApi();
   const popupType = popupApi.POPUP_TYPE?.DISPLAY ?? popupApi.POPUP_TYPE?.TEXT;
   if (typeof popupApi.callGenericPopup !== 'function' || typeof popupType !== 'number') {
@@ -2311,13 +2304,6 @@ export async function openSettingsPopup(
       try {
         await persistSettingsNow();
         await installUpdate(release, draft.updates.endpoint);
-        setPopupFeedback('success', `已安装 v${release.version}，正在刷新页面…`);
-        try {
-          callbacks.onUpdateInstalled?.(release.version);
-        } catch (error) {
-          console.warn('[AI行动选项] 显示更新成功通知失败:', error);
-        }
-        scheduleSillyTavernPageReload();
       } catch (error) {
         console.error('[AI行动选项] 安装更新失败:', error);
         setPopupFeedback('error', `安装失败：${(error as Error)?.message || '未知错误'}`);

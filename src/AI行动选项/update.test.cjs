@@ -39,6 +39,14 @@ function loadUpdate(globals = {}) {
         if (id === 'zod') return require('zod');
         if (id === './version') return { SCRIPT_VERSION: '1.6.2', UPDATE_REPOSITORY: 'emo-lsp/ai-action-options' };
         if (id === './types') return {};
+        if (id === './update_host')
+          return {
+            startHostUpdate:
+              globals.startHostUpdate ??
+              (() => {
+                throw new Error('未模拟宿主安装');
+              }),
+          };
         throw new Error(`未模拟依赖 ${id}`);
       },
       ...globals,
@@ -92,7 +100,7 @@ test('更新清单校验仓库相对路径并按版本排序', () => {
   );
 });
 
-test('自动端点按 testingcf、jsDelivr、GitHub 回退，24 小时内使用缓存', async () => {
+test('自动端点比较可用清单，同版本优先 CDN，24 小时内使用缓存', async () => {
   const requests = [];
   const update = loadUpdate({
     fetch: async url => {
@@ -105,25 +113,69 @@ test('自动端点按 testingcf、jsDelivr、GitHub 回退，24 小时内使用�
   const first = await update.checkForUpdates({ endpoint: 'auto' });
   assert.equal(first.endpointUsed, 'jsdelivr');
   assert.equal(first.hasUpdate, true);
-  assert.equal(requests.length, 2);
+  assert.equal(requests.length, 3);
   await update.checkForUpdates({ endpoint: 'auto' });
-  assert.equal(requests.length, 2, '缓存期内不应重复请求');
+  assert.equal(requests.length, 3, '缓存期内不应重复请求');
 });
 
-test('安装前校验 SHA-256，通过后只替换当前脚本内容，不重载脚本 iframe', async () => {
+test('CDN 成功返回三个旧版本时，立即检查应从原站取回四个版本', async () => {
+  const makeManifest = count => ({
+    schemaVersion: 1,
+    latest: `1.6.2-testing.${count}`,
+    versions: Array.from({ length: count }, (_, index) => ({
+      ...manifest().versions[0],
+      version: `1.6.2-testing.${index + 1}`,
+      ref: `v1.6.2-testing.${index + 1}`,
+      channel: 'beta',
+    })),
+  });
+  let publishedCount = 3;
+  const requests = [];
+  const update = loadUpdate({
+    fetch: async url => {
+      requests.push(url);
+      return {
+        ok: true,
+        json: async () => makeManifest(url.includes('raw.githubusercontent.com') ? publishedCount : 3),
+      };
+    },
+  });
+  await update.checkForUpdates({ endpoint: 'auto' });
+  publishedCount = 4;
+  const cached = await update.checkForUpdates({ endpoint: 'auto' });
+  assert.equal(cached.manifest.versions.length, 3);
+  const refreshed = await update.checkForUpdates({ endpoint: 'auto', force: true });
+  assert.equal(refreshed.manifest.versions.length, 4);
+  assert.equal(refreshed.manifest.latest, '1.6.2-testing.4');
+  assert.equal(refreshed.endpointUsed, 'github');
+  assert.equal(requests.length, 6);
+});
+
+test('固定端点仅请求所选端点；自动模式允许原站不可用', async () => {
+  const requests = [];
+  const update = loadUpdate({
+    fetch: async url => {
+      requests.push(url);
+      if (url.includes('raw.githubusercontent.com')) throw new Error('原站不可达');
+      return { ok: true, json: async () => manifest() };
+    },
+  });
+  const selected = await update.checkForUpdates({ endpoint: 'testingcf', force: true });
+  assert.equal(selected.endpointUsed, 'testingcf');
+  assert.equal(requests.length, 1);
+  const automatic = await update.checkForUpdates({ endpoint: 'auto', force: true });
+  assert.equal(automatic.status, 'success');
+  assert.equal(automatic.endpointUsed, 'testingcf');
+});
+
+test('安装前校验 SHA-256，通过后把完整内容和脚本 ID 交给宿主', async () => {
   const content = `/* release */\n${'x'.repeat(12_000)}`;
   const sha256 = createHash('sha256').update(content).digest('hex');
-  let trees = [
-    { type: 'script', id: 'other-script', name: '其他', content: 'other' },
-    { type: 'script', id: 'current-script', name: 'AI行动选项', content: 'old' },
-  ];
+  let payload;
   let reloads = 0;
   const update = loadUpdate({
-    getScriptTrees: ({ type }) => (type === 'global' ? trees : []),
-    updateScriptTreesWith: (updater, { type }) => {
-      assert.equal(type, 'global');
-      trees = updater(trees);
-      return trees;
+    startHostUpdate: value => {
+      payload = value;
     },
     fetch: async () => ({ ok: true, status: 200, text: async () => content }),
     window: {
@@ -138,47 +190,10 @@ test('安装前校验 SHA-256，通过后只替换当前脚本内容，不重载
   });
 
   await update.installUpdate({ ...manifest().versions[0], sha256 }, 'github');
-  assert.equal(trees[0].content, 'other');
-  assert.equal(trees[1].content, content);
+  assert.equal(payload.scriptId, 'current-script');
+  assert.equal(payload.content, content);
+  assert.equal(payload.version, '1.8.0');
   assert.equal(reloads, 0);
-});
-
-test('安装成功提示后由宿主窗口定时刷新 SillyTavern 顶层页面', () => {
-  let iframeReloads = 0;
-  let hostReloads = 0;
-  let scheduledDelay = 0;
-  let scheduledCallback = null;
-  const hostWindow = {
-    location: {
-      reload: () => {
-        hostReloads += 1;
-      },
-    },
-    setTimeout: (callback, delay) => {
-      scheduledCallback = callback;
-      scheduledDelay = delay;
-      return 1;
-    },
-  };
-  const update = loadUpdate({
-    window: {
-      top: hostWindow,
-      setTimeout,
-      clearTimeout,
-      location: {
-        reload: () => {
-          iframeReloads += 1;
-        },
-      },
-    },
-  });
-
-  update.scheduleSillyTavernPageReload(1_234);
-  assert.equal(scheduledDelay, 1_234);
-  assert.equal(typeof scheduledCallback, 'function');
-  assert.equal(iframeReloads, 0);
-  scheduledCallback();
-  assert.equal(hostReloads, 1);
 });
 
 test('SHA-256 不一致时不替换脚本', async () => {

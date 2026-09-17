@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { UpdateEndpoint } from './types';
 import { SCRIPT_VERSION, UPDATE_REPOSITORY } from './version';
+import { startHostUpdate } from './update_host';
 
 const UPDATE_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 8_000;
@@ -204,18 +205,30 @@ async function fetchManifest(endpoint: UpdateEndpoint): Promise<{
   manifest: UpdateManifest;
 }> {
   const errors: string[] = [];
-  for (const candidate of buildManifestUrls(endpoint)) {
-    try {
-      const response = await fetchWithTimeout(candidate.url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return {
-        endpointUsed: candidate.endpoint,
-        manifest: parseUpdateManifest(await response.json()),
-      };
-    } catch (error) {
-      errors.push(`${candidate.endpoint}: ${(error as Error)?.message || '请求失败'}`);
+  // CDN 的 HTTP 200 可能仍是旧清单；自动模式并行比较版本，不能在首个成功响应处结束。
+  const results = await Promise.all(
+    buildManifestUrls(endpoint).map(async candidate => {
+      try {
+        const response = await fetchWithTimeout(candidate.url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return {
+          endpointUsed: candidate.endpoint,
+          manifest: parseUpdateManifest(await response.json()),
+        };
+      } catch (error) {
+        errors.push(`${candidate.endpoint}: ${(error as Error)?.message || '请求失败'}`);
+        return null;
+      }
+    }),
+  );
+  let newest: (typeof results)[number] = null;
+  for (const result of results) {
+    // 同版本保留原端点优先级，不把不同快照拼接成未经发布的清单。
+    if (result && (!newest || compareVersions(result.manifest.latest, newest.manifest.latest) > 0)) {
+      newest = result;
     }
   }
+  if (newest) return newest;
   if (errors.length > 0 && errors.every(message => message.includes('HTTP 404'))) {
     throw new Error('更新清单尚未发布');
   }
@@ -300,35 +313,6 @@ async function digestSha256(content: string): Promise<string> {
   return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
-function replaceScriptContent(tree: ScriptTree, scriptId: string, content: string): [ScriptTree, boolean] {
-  if (tree.type === 'script') {
-    return tree.id === scriptId ? [{ ...tree, content }, true] : [tree, false];
-  }
-
-  let found = false;
-  const scripts = tree.scripts.map(script => {
-    if (script.id !== scriptId) return script;
-    found = true;
-    return { ...script, content };
-  });
-  return found ? [{ ...tree, scripts }, true] : [tree, false];
-}
-
-function installScriptContent(content: string): void {
-  const scriptId = getScriptId();
-  for (const type of ['global', 'preset', 'character'] as const) {
-    try {
-      const currentTrees = getScriptTrees({ type });
-      if (!currentTrees.some(tree => replaceScriptContent(tree, scriptId, content)[1])) continue;
-      updateScriptTreesWith(trees => trees.map(tree => replaceScriptContent(tree, scriptId, content)[0]), { type });
-      return;
-    } catch (error) {
-      console.warn(`[AI行动选项] 读取 ${type} 脚本列表失败`, error);
-    }
-  }
-  throw new Error('未在全局、预设或角色卡脚本中找到当前脚本');
-}
-
 export async function installUpdate(release: UpdateRelease, endpoint: UpdateEndpoint): Promise<void> {
   const parsedRelease = ReleaseSchema.parse(release);
   const candidates = getEndpointOrder(endpoint);
@@ -353,18 +337,5 @@ export async function installUpdate(release: UpdateRelease, endpoint: UpdateEndp
   }
 
   if (!content) throw new Error(`更新文件下载失败（${errors.join('；')}）`);
-  installScriptContent(content);
-}
-
-/** 延迟刷新 SillyTavern 顶层页面，避免只重载脚本 iframe。 */
-export function scheduleSillyTavernPageReload(delayMs = 1_500): void {
-  let hostWindow = window;
-  try {
-    if (window.top && window.top !== window) hostWindow = window.top;
-  } catch {
-    // 极少数跨域嵌入环境无法访问 top，退回当前窗口。
-  }
-
-  const safeDelay = Number.isFinite(delayMs) ? Math.max(0, delayMs) : 1_500;
-  hostWindow.setTimeout(() => hostWindow.location.reload(), safeDelay);
+  await startHostUpdate({ scriptId: getScriptId(), content, version: parsedRelease.version });
 }

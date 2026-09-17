@@ -1054,11 +1054,7 @@ async function initializeManagedGlobalRegexes(): Promise<void> {
 async function openSettings(): Promise<void> {
   try {
     const current = await loadSettings();
-    const next = await openSettingsPopup(current, {
-      onUpdateInstalled: version => {
-        notify('success', `v${version} 已安装，正在自动刷新页面…`, undefined, '更新成功');
-      },
-    });
+    const next = await openSettingsPopup(current);
     if (!next) return;
     const saved = await saveSettings(next);
     await applyManagedGlobalRegexes(saved);
