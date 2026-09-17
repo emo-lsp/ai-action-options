@@ -1,7 +1,18 @@
 {
   "schemaVersion": 1,
-  "latest": "1.6.2-testing.1",
+  "latest": "1.6.2-testing.2",
   "versions": [
+    {
+      "version": "1.6.2-testing.2",
+      "releasedAt": "2026-09-17",
+      "channel": "beta",
+      "changes": [
+        "仅增加测试版本号，用于验证纯版本更新与回退"
+      ],
+      "ref": "v1.6.2-testing.2",
+      "path": "index.js",
+      "sha256": "3816ad0c4db270d8c15da1284c62b3e21b749a9a3550a66106bff1aab19ea620"
+    },
     {
       "version": "1.6.2-testing.1",
       "releasedAt": "2026-09-17",
