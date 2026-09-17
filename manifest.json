@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "latest": "1.6.2-testing.1",
+  "versions": [
+    {
+      "version": "1.6.2-testing.1",
+      "releasedAt": "2026-09-17",
+      "channel": "beta",
+      "changes": [
+        "新增更新中心、自动检查、红点提醒、版本说明、安装与回退",
+        "新增历史剧情摘要读取与逐楼层预览",
+        "修正上下文拼接、缓存稳定性及内部块过滤",
+        "改进生成进度和移动端布局"
+      ],
+      "ref": "v1.6.2-testing.1",
+      "path": "index.js",
+      "sha256": "916dbf7a5f05e72b5ab8608ef6ddaef63616aaa0bb2cbf727c9d8cf3c2c02d03"
+    }
+  ]
+}
