@@ -2,7 +2,7 @@
 
 为 SillyTavern 对话生成贴合当前剧情的行动选项，让每一轮回复都有可继续推进的方向。
 
-**当前版本：1.6.3 · 作者：emo的lsp**
+**当前版本：1.6.4 · 作者：emo的lsp**
 
 ## 功能
 
@@ -29,7 +29,7 @@
 2. 将名称设为“AI 行动选项”，在“脚本内容”中填写：
 
 ```js
-import 'https://testingcf.jsdelivr.net/gh/emo-lsp/ai-action-options@v1.6.3/index.js';
+import 'https://testingcf.jsdelivr.net/gh/emo-lsp/ai-action-options@v1.6.4/index.js';
 ```
 
 3. 保存并启用脚本，打开脚本设置完成模型配置。
@@ -39,13 +39,13 @@ import 'https://testingcf.jsdelivr.net/gh/emo-lsp/ai-action-options@v1.6.3/index
 **jsDelivr**
 
 ```js
-import 'https://cdn.jsdelivr.net/gh/emo-lsp/ai-action-options@v1.6.3/index.js';
+import 'https://cdn.jsdelivr.net/gh/emo-lsp/ai-action-options@v1.6.4/index.js';
 ```
 
 **GitHub Raw**
 
 ```js
-import 'https://raw.githubusercontent.com/emo-lsp/ai-action-options/v1.6.3/index.js';
+import 'https://raw.githubusercontent.com/emo-lsp/ai-action-options/v1.6.4/index.js';
 ```
 
 不同端点的可达性取决于网络环境，部分网络需要代理。
@@ -90,4 +90,4 @@ CDN 清单可能尚未同步。切换到 GitHub Raw 后点击“立即检查”�
 
 ## 更新记录
 
-查看 [完整更新记录](CHANGELOG.md) 或 [1.6.3 发布说明](release-notes/1.6.3.md)。
+查看 [完整更新记录](CHANGELOG.md) 或 [1.6.4 发布说明](release-notes/1.6.4.md)。
