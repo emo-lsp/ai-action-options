@@ -29,7 +29,7 @@
 2. 将名称设为“AI 行动选项”，在“脚本内容”中填写：
 
 ```js
-import 'https://testingcf.jsdelivr.net/gh/emo-lsp/ai-action-options@v1.6.4/index.js';
+import 'https://testingcf.jsdelivr.net/gh/emo-lsp/ai-action-options@main/versions/1.6.4/index.js';
 ```
 
 3. 保存并启用脚本，打开脚本设置完成模型配置。
@@ -39,13 +39,13 @@ import 'https://testingcf.jsdelivr.net/gh/emo-lsp/ai-action-options@v1.6.4/index
 **jsDelivr**
 
 ```js
-import 'https://cdn.jsdelivr.net/gh/emo-lsp/ai-action-options@v1.6.4/index.js';
+import 'https://cdn.jsdelivr.net/gh/emo-lsp/ai-action-options@main/versions/1.6.4/index.js';
 ```
 
 **GitHub Raw**
 
 ```js
-import 'https://raw.githubusercontent.com/emo-lsp/ai-action-options/v1.6.4/index.js';
+import 'https://raw.githubusercontent.com/emo-lsp/ai-action-options/main/versions/1.6.4/index.js';
 ```
 
 不同端点的可达性取决于网络环境，部分网络需要代理。
@@ -66,7 +66,8 @@ import 'https://raw.githubusercontent.com/emo-lsp/ai-action-options/v1.6.4/index
 - **自动检查**：最多每 24 小时检查一次，发现更新显示红点，不会自动安装。
 - **立即检查**：重新请求版本清单，不等待脚本本地缓存到期。
 - **自动选择端点**：比较可用端点的清单，选择最新版本。
-- **手动安装**：查看更新内容并确认后，校验下载文件、替换当前脚本并保留设置；完成后提示刷新页面。
+- **手动安装**：查看更新内容并确认后，校验完整发布文件，再把当前脚本切换为对应版本的固定远程引导；完成后提示刷新页面。
+- **查看与回退**：版本列表会保留已发布的正式版，可展开查看说明并安装或回退；回退后仍锁定所选版本，不会自动跳回最新版。
 
 安装地址固定初始版本，后续通过更新中心升级，无需手动修改地址中的版本号。
 
