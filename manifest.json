@@ -1,7 +1,20 @@
 {
   "schemaVersion": 1,
-  "latest": "1.6.4",
+  "latest": "1.6.5",
   "versions": [
+    {
+      "version": "1.6.5",
+      "releasedAt": "2026-09-26",
+      "channel": "stable",
+      "changes": [
+        "修复思考段中的未闭合伪变量标签导致最新正文丢失、生成误报历史缺失",
+        "历史摘要开启时校验完整楼层范围，短暂缺失会重读，持续缺失则停止生成",
+        "最新 AI 回复正文无法提取时显示明确错误，不再用旧楼层替代"
+      ],
+      "ref": "main",
+      "path": "versions/1.6.5/index.js",
+      "sha256": "4db15a8acb0d948632e9597dade43b640897dfec6a2d757a3188da80e8aa6133"
+    },
     {
       "version": "1.6.4",
       "releasedAt": "2026-09-18",
