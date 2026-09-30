@@ -1,7 +1,22 @@
 {
   "schemaVersion": 1,
-  "latest": "1.6.5",
+  "latest": "1.6.6",
   "versions": [
+    {
+      "version": "1.6.6",
+      "releasedAt": "2026-09-30",
+      "channel": "stable",
+      "changes": [
+        "修复楼层约每秒循环重载的问题",
+        "生成进度窗新增停止按钮，写入楼层前可随时中止",
+        "历史摘要读取显示实际读取内容的 Token 估算",
+        "设置页调整：内置选项模板移入“世界书和模板”，“生成与摘要”页整合历史摘要读取，页签切换动画更流畅",
+        "摘要识别忽略 interleaving 等结构标签，避免误把整段正文当作摘要"
+      ],
+      "ref": "main",
+      "path": "versions/1.6.6/index.js",
+      "sha256": "03e2adc6056b822655d1f4b87e1a43a836051ea826a9b98ad692dae028e12d4a"
+    },
     {
       "version": "1.6.5",
       "releasedAt": "2026-09-26",
