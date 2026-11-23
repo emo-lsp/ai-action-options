@@ -1,7 +1,21 @@
 {
   "schemaVersion": 1,
-  "latest": "1.6.7",
+  "latest": "1.6.8",
   "versions": [
+    {
+      "version": "1.6.8",
+      "releasedAt": "2026-11-24",
+      "channel": "stable",
+      "changes": [
+        "行动选项界面全新设计：文字选择肢风格，更紧凑，自动跟随酒馆主题配色与明暗",
+        "悬停或按下选项时显示光标与高亮，点选方式按钮新增图标与切换动画",
+        "旧版选项界面地址自动更新为新界面，并固定到具体版本",
+        "修复格式重试后价格与 Tokens 只统计最后一次请求的问题，现为全部请求合计"
+      ],
+      "ref": "main",
+      "path": "versions/1.6.8/index.js",
+      "sha256": "5d382e6bdc1382ecbeb65e74b79c390afe2a8a03c4ea1b85e1cc18f66c68ed24"
+    },
     {
       "version": "1.6.7",
       "releasedAt": "2026-10-06",
